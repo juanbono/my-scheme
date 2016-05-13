@@ -1,44 +1,0 @@
-
-./src/SimpleParser.hs,222
-module SimpleParser SimpleParser0,1
-symbol symbol7,8
-symbol symbol8,9
-spaces spaces11,12
-spaces spaces12,13
-readExpr readExpr17,18
-readExpr readExpr18,19
-parseExpr parseExpr22,23
-parseExpr parseExpr23,24
-
-./src/Lib.hs,65
-module LibLib0,1
-someFunc someFunc4,5
-someFunc someFunc5,6
-
-./src/Simple-parser.hs,420
-module SimpleParser SimpleParser0,1
-symbol symbol7,8
-symbol symbol8,9
-readExpr readExpr13,14
-readExpr readExpr14,15
-parseExpr parseExpr18,19
-parseExpr parseExpr19,20
-data LispVal LispVal23,24
-data LispVal = Atom Atom23,24
-             | List List24,25
-             | DottedList DottedList25,26
-             | Number Number26,27
-             | String String27,28
-             | Bool Bool28,29
-
-./Setup.hs,15
-main main1,2
-
-./app/Main.hs,52
-module Main Main0,1
-main main4,5
-main main5,6
-
-./test/Spec.hs,30
-main main0,1
-main main1,2
