@@ -1,6 +1,6 @@
 module Main where
 
-import SimpleParser
+import qualified SimpleParser as Parser
 
 main :: IO ()
-main = parseExpr
+main = Parser.main
