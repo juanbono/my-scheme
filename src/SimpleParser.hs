@@ -2,6 +2,8 @@ module SimpleParser (main) where
 
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
+import Numeric (readOct, readHex)
+import Data.Char (toLower)
 
 -- parser que reconoce uno de los simbolos permitidos
 -- en los identificadores de Scheme
@@ -26,6 +28,16 @@ data LispVal = Atom String
              | Number Integer
              | String String
              | Bool Bool
+             | Character Char
+
+parseCharacter :: Parser LispVal
+parseCharacter = do _ <- string "#\\"
+                    s <- many letter
+                    return $ case (map toLower s) of
+                               "space"   -> Character ' '
+                               ""        -> Character ' '
+                               "newline" -> Character '\n'
+                               [x]       -> Character x
 
 parseEscapedChar :: Parser Char
 parseEscapedChar = do _ <- char '\\'
@@ -54,13 +66,38 @@ parseAtom = do first <- letter <|> symbol
                           "#f" -> Bool False
                           _    -> Atom atom
 
--- many1 matchea 1 o mas
--- many1 digit matchea con 1 o mas digitos.
--- Luego al string parseado se le aplica read (se lo pasa a Integer)
--- y luego se construye un Number a partir de ese valor. Todo dentro de
--- el contexto monadico de Parser (liftM pasa (Number . read) al contexto)
+readBin :: String -> Integer
+readBin = undefined  -- TODO: hacer funcion para pasar numeros binarios a enteros
+
+parseBin :: Parser LispVal
+parseBin = do _ <- char 'b'
+              number <- many1 (oneOf "01")
+              return $ (Number . readBin) number
+
+parseDec :: Parser LispVal
+parseDec = do _ <- char 'd'
+              number <- many1 digit
+              return $ (Number . read) number
+
+parseOct :: Parser LispVal
+parseOct = do _ <- char 'o'
+              number <- many1 (oneOf "01234567")
+              return $ (Number . fst . head . readOct) number
+
+parseHex :: Parser LispVal
+parseHex = do _ <- char 'x'
+              number <- many1 (oneOf "0123456789abcdefABCDEF")
+              return $ (Number . fst . head . readHex) number
+
+parseNumberWithPrefix :: Parser LispVal
+parseNumberWithPrefix = do _ <- char '#'
+                           parseBin <|> parseDec <|> parseOct <|> parseHex
+
+parsePlainNumber :: Parser LispVal
+parsePlainNumber = (Number . read) <$> many1 digit
+
 parseNumber :: Parser LispVal
-parseNumber = (Number . read) <$> many1 digit
+parseNumber = parsePlainNumber <|> parseNumberWithPrefix
 
 -- parsea una serie de expresiones separadas por espacios y luego aplica el constructor List.
 parseList :: Parser LispVal
@@ -83,8 +120,9 @@ parseListLike = do _ <- char '('
                    return x
 
 parseExpr :: Parser LispVal
-parseExpr = parseAtom
+parseExpr =  parseAtom
          <|> parseString
+         <|> parseCharacter
          <|> parseNumber
          <|> parseQuoted
          <|> parseListLike
@@ -107,14 +145,16 @@ Exercises: Writing a Simple Parser
 3. Modify the previous exercise to support \n, \r, \t, \\, and any other desired escape characters.
 
 4. Change parseNumber to support the Scheme standard for different bases. You may find the readOct and readHex functions useful.
-   TODO
+
 5. Add a Character constructor to LispVal, and create a parser for character literals as described in R5RS.
-   Add a Float constructor to LispVal, and support R5RS syntax for decimals. The Haskell function readFloat may be useful.
+
+6. Add a Float constructor to LispVal, and support R5RS syntax for decimals. The Haskell function readFloat may be useful.
    TODO
-6. Add data types and parsers to support the full numeric tower of Scheme numeric types. Haskell has built-in types to
+7. Add data types and parsers to support the full numeric tower of Scheme numeric types. Haskell has built-in types to
    represent many of these; check the Prelude. For the others, you can define compound types that represent
    eg. a Rational as a numerator and denominator, or a Complex as a real and imaginary part (each itself a Real).
    TODO
+
 Exercises: Recursive Parsers
 ----------------------------
 1. Add support for the backquote syntactic sugar: The Scheme standard details what it should expand into (quasiquote/unquote).
