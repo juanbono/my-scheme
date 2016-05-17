@@ -1,8 +1,8 @@
 module Main where
 
 import qualified SimpleParser as Parser
+import Eval
 import System.Environment
 
 main :: IO ()
-main = do (expr:_) <- getArgs
-          putStrLn (Parser.readExpr expr)
+main = getArgs >>= print . eval . Parser.readExpr . head

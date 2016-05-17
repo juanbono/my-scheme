@@ -5,35 +5,39 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import Prelude hiding (toRational)
 import Numeric (readOct, readHex)
 import Data.Char (toLower)
-import Data.Complex (Complex (..))
+import Data.Complex (realPart, Complex (..))
 import Data.Ratio
 
 -- parse toma: Un Parser como primer parametro
 --             Un String como nombre de la entrada, para los errores.
 --             La entrada
-readExpr :: String -> String
+readExpr :: String -> LispVal
 readExpr input = case parse parseExpr "lisp" input of
-                   Left err -> "No match: " ++ show err
-                   Right _  -> "Found value"
+                   Left err -> String $ "No match: " ++ show err
+                   Right value  -> value
 
 parseExpr :: Parser LispVal
-parseExpr =  parseAtom
-         <|> parseString
-         <|> parseCharacter
-         <|> parseNumber
-         <|> parseQuoted
-         <|> parseListLike
+parseExpr = try parseNumber
+         <|> try parseString
+         <|> try parseBool
+         <|> try parseCharacter
+         <|> try parseAtom
+         <|> try parseQuoted
+         <|> try parseListLike
 
 -- Parseo de atomos
 parseAtom :: Parser LispVal
 parseAtom = do first <- letter <|> symbol
                rest  <- many (letter <|> digit <|> symbol)
                let atom = first:rest
-               return $ case atom of
-                          "#t" -> Bool True
-                          "#f" -> Bool False
-                          _    -> Atom atom
+               return $ Atom atom
 
+parseBool :: Parser LispVal
+parseBool = do _ <- char '#'
+               c <- oneOf "tf"
+               (return . Bool) $ case c of
+                                   't' -> True
+                                   'f' -> False
 -- Parseo de strings
 parseString :: Parser LispVal
 parseString = do _ <- char '"'
@@ -63,14 +67,20 @@ parseCharacter = do _ <- string "#\\"
 
 -- Parseo de tipos numericos
 parseNumber :: Parser LispVal
-parseNumber = parsePlainNumber <|> parseNumberWithPrefix -- corregir
+parseNumber = try parseComplexNumber
+           <|> try parseFloat
+           <|> try parseRationalNumber
+           <|> try parseInteger
 
-parseNumberWithPrefix :: Parser LispVal
-parseNumberWithPrefix = do _ <- char '#'
-                           parseBin <|> parseDec <|> parseOct <|> parseHex
+parseInteger :: Parser LispVal
+parseInteger = try parseIntWithPrefix <|> try parsePlainInt
 
-parsePlainNumber :: Parser LispVal
-parsePlainNumber = (Number . Integer. read) <$> many1 digit -- corregir?
+parseIntWithPrefix :: Parser LispVal
+parseIntWithPrefix = do _ <- char '#'
+                        try parseBin <|> try parseDec <|> try parseOct <|> try parseHex
+
+parsePlainInt :: Parser LispVal
+parsePlainInt = (toInt . read) <$> many1 digit
 
 parseFloat :: Parser LispVal
 parseFloat = do int <- many1 digit
@@ -81,17 +91,17 @@ parseFloat = do int <- many1 digit
 
 -- Toma un numero de lisp y devuelve un numero de haskell
 -- asumo que ese numero puede es real (un double)
-fromNumber :: Num a => LispVal -> a
-fromNumber (Number (Integer x))  = undefined
-fromNumber (Number (Float x))    = undefined
-fromNumber (Number (Complex x))  = undefined
-fromNumber (Number (Rational x)) = undefined
+fromNumber :: LispVal -> Double
+fromNumber (Number (Integer x))  = fromIntegral x
+fromNumber (Number (Float x))    = x
+fromNumber (Number (Rational x)) = fromRational x
+fromNumber (Number (Complex x))  = realPart x
 
 parseComplexNumber :: Parser LispVal
-parseComplexNumber = do real <- fromNumber <$> (try parsePlainNumber <|> parseFloat <|> parseRationalNumber)
+parseComplexNumber = do real <- fromNumber <$> (try parseFloat <|> try parseRationalNumber <|> try parseInteger)
                         _ <- oneOf "+-"
-                        imaginary <- fromNumber <$> (try parsePlainNumber <|> parseFloat <|> parseRationalNumber)
-                        return $ toComplex (real :+ imaginary)
+                        imag <- fromNumber <$> (try parseFloat <|> try parseRationalNumber <|> try parseInteger)
+                        return $ toComplex (real :+ imag)
 
 parseRationalNumber :: Parser LispVal
 parseRationalNumber = do p <- read <$> many1 digit
@@ -100,13 +110,17 @@ parseRationalNumber = do p <- read <$> many1 digit
                          return $ toRational (p % q)
 
 -- Parseo de numeros en diferentes bases numericas
-readBin :: String -> Int
-readBin = undefined  -- TODO: hacer funcion para pasar numeros binarios a enteros
+readBin :: Char -> Int
+readBin '0' = 0
+readBin '1' = 1
+
+fromBinary :: String -> Int
+fromBinary s = sum $ map (\(i,x) -> i*(2^x)) $ zip [0..] $ map readBin (reverse s)
 
 parseBin :: Parser LispVal
 parseBin = do _ <- char 'b'
               number <- many1 (oneOf "01")
-              return $ (toInt . readBin) number
+              return $ (toInt . fromBinary) number
 
 parseDec :: Parser LispVal
 parseDec = do _ <- char 'd'
