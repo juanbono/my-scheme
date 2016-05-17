@@ -1,6 +1,7 @@
 module Syntax where
 
 import Data.Complex (Complex (..))
+import Data.Ratio
 
 data LispVal = Atom String
              | List [LispVal]

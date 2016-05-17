@@ -1,4 +1,5 @@
 
+# Chapter 2: Parsing
 Exercises: Writing a Simple Parser
 -----------------------------------
 1. Rewrite parseNumber, without liftM, using

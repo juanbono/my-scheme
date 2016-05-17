@@ -1,23 +1,12 @@
-module SimpleParser (main) where
+module SimpleParser (readExpr) where
 
 import Syntax
 import Text.ParserCombinators.Parsec hiding (spaces)
-import System.Environment
+import Prelude hiding (toRational)
 import Numeric (readOct, readHex)
 import Data.Char (toLower)
 import Data.Complex (Complex (..))
-
-main :: IO ()
-main = do (expr:_) <- getArgs
-          putStrLn (readExpr expr)
-
-parseExpr :: Parser LispVal
-parseExpr =  parseAtom
-         <|> parseString
-         <|> parseCharacter
-         <|> parseNumber
-         <|> parseQuoted
-         <|> parseListLike
+import Data.Ratio
 
 -- parse toma: Un Parser como primer parametro
 --             Un String como nombre de la entrada, para los errores.
@@ -26,6 +15,14 @@ readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
                    Left err -> "No match: " ++ show err
                    Right _  -> "Found value"
+
+parseExpr :: Parser LispVal
+parseExpr =  parseAtom
+         <|> parseString
+         <|> parseCharacter
+         <|> parseNumber
+         <|> parseQuoted
+         <|> parseListLike
 
 -- Parseo de atomos
 parseAtom :: Parser LispVal
@@ -82,9 +79,13 @@ parseFloat = do int <- many1 digit
                 let number = int ++ "." ++ decimal
                 return $ (toFloat . read) number
 
-
+-- Toma un numero de lisp y devuelve un numero de haskell
+-- asumo que ese numero puede es real (un double)
 fromNumber :: Num a => LispVal -> a
-fromNumber _ = undefined
+fromNumber (Number (Integer x))  = undefined
+fromNumber (Number (Float x))    = undefined
+fromNumber (Number (Complex x))  = undefined
+fromNumber (Number (Rational x)) = undefined
 
 parseComplexNumber :: Parser LispVal
 parseComplexNumber = do real <- fromNumber <$> (try parsePlainNumber <|> parseFloat <|> parseRationalNumber)
@@ -93,7 +94,10 @@ parseComplexNumber = do real <- fromNumber <$> (try parsePlainNumber <|> parseFl
                         return $ toComplex (real :+ imaginary)
 
 parseRationalNumber :: Parser LispVal
-parseRationalNumber = undefined
+parseRationalNumber = do p <- read <$> many1 digit
+                         _ <- char '/'
+                         q <- read <$> many1 digit
+                         return $ toRational (p % q)
 
 -- Parseo de numeros en diferentes bases numericas
 readBin :: String -> Int
@@ -142,7 +146,6 @@ parseQuoted = do _ <- char '\''
                  return $ List [Atom "quote", x]
 
 -- Funciones Auxiliares
-
 -- parser que reconoce uno de los simbolos permitidos
 -- en los identificadores de Scheme
 symbol :: Parser Char
