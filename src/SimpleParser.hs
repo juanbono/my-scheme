@@ -1,3 +1,5 @@
+{-# LANGUAGE GADTs #-}
+
 module SimpleParser (readExpr) where
 
 import Syntax
@@ -18,12 +20,12 @@ readExpr input = case parse parseExpr "lisp" input of
 
 parseExpr :: Parser LispVal
 parseExpr = try parseNumber
-         <|> try parseString
-         <|> try parseBool
-         <|> try parseCharacter
-         <|> try parseAtom
-         <|> try parseQuoted
-         <|> try parseListLike
+            <|> try parseString
+            <|> try  parseBool
+            <|> try parseCharacter
+            <|> try parseAtom
+            <|> try parseQuoted
+            <|> try parseListLike
 
 -- Parseo de atomos
 parseAtom :: Parser LispVal
@@ -59,7 +61,7 @@ parseEscapedChar = do _ <- char '\\'
 parseCharacter :: Parser LispVal
 parseCharacter = do _ <- string "#\\"
                     s <- many letter
-                    (return . Character) $ case (map toLower s) of
+                    (return . Character) $ case map toLower s of
                                              "spaces"  -> ' '
                                              ""        -> ' '
                                              "newline" -> '\n'
