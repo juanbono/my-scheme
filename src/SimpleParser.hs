@@ -1,5 +1,3 @@
-{-# LANGUAGE GADTs #-}
-
 module SimpleParser (readExpr) where
 
 import Syntax
@@ -82,34 +80,34 @@ parseIntWithPrefix = do _ <- char '#'
                         try parseBin <|> try parseDec <|> try parseOct <|> try parseHex
 
 parsePlainInt :: Parser LispVal
-parsePlainInt = (toInt . read) <$> many1 digit
+parsePlainInt = (Number . read) <$> many1 digit
 
 parseFloat :: Parser LispVal
 parseFloat = do int <- many1 digit
                 _       <- char '.'
                 decimal <- many1 digit
                 let number = int ++ "." ++ decimal
-                return $ (toFloat . read) number
+                return $ (Float . read) number
 
 -- Toma un numero de lisp y devuelve un numero de haskell
 -- asumo que ese numero puede es real (un double)
 fromNumber :: LispVal -> Double
-fromNumber (Number (Integer x))  = fromIntegral x
-fromNumber (Number (Float x))    = x
-fromNumber (Number (Rational x)) = fromRational x
-fromNumber (Number (Complex x))  = realPart x
+fromNumber (Number x)  = fromIntegral x
+fromNumber (Float x)    = x
+fromNumber (Rational x) = fromRational x
+fromNumber (Complex x)  = realPart x
 
 parseComplexNumber :: Parser LispVal
 parseComplexNumber = do real <- fromNumber <$> (try parseFloat <|> try parseRationalNumber <|> try parseInteger)
                         _ <- oneOf "+-"
                         imag <- fromNumber <$> (try parseFloat <|> try parseRationalNumber <|> try parseInteger)
-                        return $ toComplex (real :+ imag)
+                        return $ Complex (real :+ imag)
 
 parseRationalNumber :: Parser LispVal
 parseRationalNumber = do p <- read <$> many1 digit
                          _ <- char '/'
                          q <- read <$> many1 digit
-                         return $ toRational (p % q)
+                         return $ Rational (p % q)
 
 -- Parseo de numeros en diferentes bases numericas
 readBin :: Char -> Int
@@ -122,22 +120,22 @@ fromBinary s = sum $ map (\(i,x) -> i*(2^x)) $ zip [0..] $ map readBin (reverse 
 parseBin :: Parser LispVal
 parseBin = do _ <- char 'b'
               number <- many1 (oneOf "01")
-              return $ (toInt . fromBinary) number
+              return $ (Number . fromBinary) number
 
 parseDec :: Parser LispVal
 parseDec = do _ <- char 'd'
               number <- many1 digit
-              return $ (toInt . read) number
+              return $ (Number . read) number
 
 parseOct :: Parser LispVal
 parseOct = do _ <- char 'o'
               number <- many1 (oneOf "01234567")
-              return $ (toInt . fst . head . readOct) number
+              return $ (Number . fst . head . readOct) number
 
 parseHex :: Parser LispVal
 parseHex = do _ <- char 'x'
               number <- many1 (oneOf "0123456789abcdefABCDEF")
-              return $ (toInt . fst . head . readHex) number
+              return $ (Number . fst . head . readHex) number
 
 
 -- Parseo de listas y listas puntuadas

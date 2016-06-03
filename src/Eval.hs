@@ -1,4 +1,3 @@
-{-# LANGUAGE GADTs #-}
 module Eval (eval) where
 
 import Syntax
