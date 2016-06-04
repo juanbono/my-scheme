@@ -15,27 +15,20 @@ apply func args = maybe (Bool False) ($ args) $ lookup func primitives
 primitives :: [(String, [LispVal] -> LispVal)]
 primitives = [("+", numericBinop (+)),
               ("-", numericBinop (-)),
-              ("*", numericBinop (*))]
-             -- ("/", numericBinop div),
-             -- ("mod", numericBinop mod),           -- Fijarme como hacer para que no defaultee a Integer
-             -- ("quotient", numericBinop quot),     -- por el usod de div, mod, quot, rem
-             -- ("remainder", numericBinop rem)]
+              ("*", numericBinop (*)),
+              ("/", numericBinop div),
+              ("mod", numericBinop mod),
+              ("quotient", numericBinop quot),
+              ("remainder", numericBinop rem)]
 
-numericBinop :: Num a => (a -> a -> a) -> [LispVal] -> LispVal
-numericBinop op params = undefined
-
-{- Version dada por el libro
- - Pensar el foldl1 como un "reemplazador de funciones".
- - Reemplaza cada ocurrencia de ":" por la operacion "op".
-numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
+numericBinop :: (Int -> Int -> Int) -> [LispVal] -> LispVal
 numericBinop op params = Number $ foldl1 op $ map unpackNum params
 
-unpackNum :: LispVal -> Integer
+unpackNum :: LispVal -> Int
 unpackNum (Number n) = n
-unpackNum (String n) = let parsed = reads n :: [(Integer, String)] in
+unpackNum (String n) = let parsed = reads n :: [(Int, String)] in
                            if null parsed
                               then 0
-                              else fst $ parsed !! 0
+                              else fst $ head parsed
 unpackNum (List [n]) = unpackNum n
 unpackNum _ = 0
--}
