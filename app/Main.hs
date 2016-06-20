@@ -5,4 +5,7 @@ import Eval
 import System.Environment
 
 main :: IO ()
-main = getArgs >>= print . eval . Parser.readExpr . head
+main = do
+  args <- getArgs
+  let evaled = fmap show $ Parser.readExpr (head args) >>= eval
+  putStrLn $ extractValue $ trapError evaled

@@ -7,14 +7,17 @@ import Numeric (readOct, readHex)
 import Data.Char (toLower)
 import Data.Complex (realPart, Complex (..))
 import Data.Ratio
+import Eval
+import Control.Monad.Except
+
 
 -- parse toma: Un Parser como primer parametro
 --             Un String como nombre de la entrada, para los errores.
 --             La entrada
-readExpr :: String -> LispVal
+readExpr :: String -> ThrowsError LispVal
 readExpr input = case parse parseExpr "lisp" input of
-                   Left err -> String $ "No match: " ++ show err
-                   Right value  -> value
+                   Left err -> throwError $ Parser err
+                   Right value  -> return value
 
 parseExpr :: Parser LispVal
 parseExpr = try parseNumber
