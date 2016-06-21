@@ -1,3 +1,4 @@
+{-# LANGUAGE ExistentialQuantification #-}
 module Eval (eval, LispError (..), ThrowsError, trapError, extractValue) where
 
 import Syntax
@@ -97,6 +98,23 @@ strBoolBinop = boolBinop unpackStr
 
 boolBoolBinop :: (Bool -> Bool -> Bool) -> [LispVal] -> ThrowsError LispVal
 boolBoolBinop = boolBinop unpackBool
+
+data Unpacker = forall a. Eq a => AnyUnpacker (LispVal -> ThrowsError a)
+
+unpackEquals :: LispVal -> LispVal -> Unpacker -> ThrowsError Bool
+unpackEquals arg1 arg2 (AnyUnpacker unpacker) =
+  do unpacked1 <- unpacker arg1
+     unpacked2 <- unpacker arg2
+     return $ unpacked1 == unpacked2
+     `catchError` const (return False)
+
+equal :: [LispVal] -> ThrowsError LispVal
+equal [arg1, arg2] = do
+  let unpackers = [AnyUnpacker unpackNum, AnyUnpacker unpackStr, AnyUnpacker unpackBool]
+  primitiveEquals <- or <$> mapM (unpackEquals arg1 arg2) unpackers
+  (Bool eqvResult) <- eqv [arg1, arg2]
+  return $ Bool (primitiveEquals || eqvResult)
+equal badArgList = throwError $ NumArgs 2 badArgList
 
 unpackStr :: LispVal -> ThrowsError String
 unpackStr (String s) = return s

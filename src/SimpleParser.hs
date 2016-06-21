@@ -10,7 +10,6 @@ import Data.Ratio
 import Eval
 import Control.Monad.Except
 
-
 -- parse toma: Un Parser como primer parametro
 --             Un String como nombre de la entrada, para los errores.
 --             La entrada
