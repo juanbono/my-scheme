@@ -5,9 +5,9 @@ description:         Please see README.md
 homepage:            https://github.com/juanbono/my-scheme#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
+author:              juan bono
 maintainer:          example@example.com
-copyright:           2016 Author name here
+copyright:           2016 juan bono
 category:            Web
 build-type:          Simple
 -- extra-source-files:
@@ -15,7 +15,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     SimpleParser, Syntax, Eval, Error
+  exposed-modules:     SimpleParser,
+                       Syntax,
+                       Eval,
+                       Error,
+                       Repl
   build-depends:       base >= 4.7 && < 5,
                        parsec >= 3.1.9,
                        mtl >= 2.2.1,

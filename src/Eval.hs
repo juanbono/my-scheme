@@ -1,11 +1,11 @@
 {-# LANGUAGE ExistentialQuantification #-}
 module Eval (eval, LispError (..), ThrowsError, trapError, extractValue) where
 
-import Syntax
-import Text.ParserCombinators.Parsec
-import Error
-import Control.Monad.Except
-
+import           Control.Monad.Except
+import           Error
+import           Syntax
+import           Text.ParserCombinators.Parsec
+-- ss
 eval :: LispVal -> ThrowsError LispVal
 eval val@(String _) = return val
 eval val@(Number _) = return val

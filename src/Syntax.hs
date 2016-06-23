@@ -1,5 +1,5 @@
 module Syntax where
-import Data.Complex (Complex (..))
+import           Data.Complex (Complex (..))
 
 instance Show LispVal where
   show (Atom s)          = s

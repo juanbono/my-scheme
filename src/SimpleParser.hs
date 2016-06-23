@@ -1,14 +1,14 @@
 module SimpleParser (readExpr) where
 
-import Syntax
-import Text.ParserCombinators.Parsec hiding (spaces)
-import Prelude hiding (toRational)
-import Numeric (readOct, readHex)
-import Data.Char (toLower)
-import Data.Complex (realPart, Complex (..))
-import Data.Ratio
-import Eval
-import Control.Monad.Except
+import           Control.Monad.Except
+import           Data.Char                     (toLower)
+import           Data.Complex                  (Complex (..), realPart)
+import           Data.Ratio
+import           Eval
+import           Numeric                       (readHex, readOct)
+import           Prelude                       hiding (toRational)
+import           Syntax
+import           Text.ParserCombinators.Parsec hiding (spaces)
 
 -- parse toma: Un Parser como primer parametro
 --             Un String como nombre de la entrada, para los errores.
