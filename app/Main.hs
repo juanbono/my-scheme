@@ -3,6 +3,7 @@ module Main where
 import qualified SimpleParser as Parser
 import Eval
 import System.Environment
+import Error
 
 main :: IO ()
 main = do
