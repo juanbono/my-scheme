@@ -19,7 +19,8 @@ library
                        Syntax,
                        Eval,
                        Error,
-                       Repl
+                       Repl,
+                       Environment
   build-depends:       base >= 4.7 && < 5,
                        parsec >= 3.1.9,
                        mtl >= 2.2.1,
