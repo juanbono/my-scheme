@@ -1,4 +1,6 @@
-module SimpleParser (readExpr) where
+module Parser
+  ( readExpr
+  ) where
 
 import           Control.Monad.Except
 import           Data.Char                     (toLower)

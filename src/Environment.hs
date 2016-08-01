@@ -3,7 +3,6 @@ module Environment where
 import           Control.Monad.Except
 import           Data.IORef
 import           Data.Maybe
-import           Error
 import           Syntax
 
 type Env = IORef [(String, IORef LispVal)]

@@ -1,9 +1,8 @@
 module Repl where
 
 import           Control.Monad
-import           Error
 import           Eval
-import           SimpleParser
+import           Parser
 import           System.IO
 import           Environment
 

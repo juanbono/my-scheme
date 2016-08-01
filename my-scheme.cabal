@@ -15,10 +15,9 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     SimpleParser,
+  exposed-modules:     Parser,
                        Syntax,
                        Eval,
-                       Error,
                        Repl,
                        Environment
   build-depends:       base >= 4.7 && < 5,

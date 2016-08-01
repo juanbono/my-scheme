@@ -1,11 +1,16 @@
 {-# LANGUAGE ExistentialQuantification #-}
-module Eval (eval, LispError (..), ThrowsError, trapError, extractValue) where
+module Eval
+  ( eval
+  , LispError (..)
+  , ThrowsError
+  , trapError
+  , extractValue
+  ) where
 
 import           Control.Monad.Except
-import           Error
+import           Environment
 import           Syntax
 import           Text.ParserCombinators.Parsec
-import           Environment
 
 eval :: Env -> LispVal -> IOThrowsError LispVal
 eval env val@(String _) = return val
